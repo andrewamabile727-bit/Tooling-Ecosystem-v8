@@ -17,7 +17,12 @@ def poly_hash_v8(string_in, modulo=10000):
 st.set_page_config(page_title="Molds & Fixtures Ecosystem", layout="wide")
 
 # Map the categories to their prefixes and specific Generator Names
+# Z0 added as the primary Master Assembly tier
 category_data = {
+    "Molds-Cladding-Master-Assy": {
+        "prefix": "Z0",
+        "title": "Molds-Cladding-Master-Assy P/N Code Generator"
+    },
     "Molds-Cladding": {
         "prefix": "Z1", 
         "title": "Molds-Cladding P/N Code Generator"
