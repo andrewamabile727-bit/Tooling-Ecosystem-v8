@@ -1,9 +1,8 @@
 import streamlit as st
 import pandas as pd
 import hashlib
-import io
 
-# --- 1. TOOLING ENGINE (THE BRAIN) - UPGRADED TO SHA-256 ---
+# --- 1. TOOLING ENGINE (THE BRAIN) - SHA-256 ---
 def sha256_hash_v9(string_in, modulo=10000):
     """Generates a 4-digit unique numerical code using SHA-256 for superior entropy"""
     # Removes dashes and spaces, making it uppercase for a perfect match
@@ -22,19 +21,23 @@ st.set_page_config(page_title="Molds & Fixtures Ecosystem", layout="wide")
 category_data = {
     "Molds-Cladding-Master-Assy": {
         "prefix": "Z0",
-        "title": "Molds-Cladding-Master-Assy P/N Code Generator"
+        "title": "Molds-Cladding-Master-Assy P/N Code Generator",
+        "example": "Z0-Z10000-Z15996-Z14924-Z17707"
     },
     "Molds-Cladding": {
         "prefix": "Z1", 
-        "title": "Molds-Cladding P/N Code Generator"
+        "title": "Molds-Cladding P/N Code Generator",
+        "example": "Z1-01.20D-1B2-C1B-01"
     },
     "Molds-Countertop": {
         "prefix": "Z2", 
-        "title": "Molds-Countertop P/N Code Generator"
+        "title": "Molds-Countertop P/N Code Generator",
+        "example": "Z2-01.20D1-A0A0A0-B-01"
     },
     "Mfg. Fixtures & Jigs": {
         "prefix": "Y1", 
-        "title": "Mfg. Fixtures & Jigs P/N Code Generator"
+        "title": "Mfg. Fixtures & Jigs P/N Code Generator",
+        "example": "Y1-00.00A1-A0A0A0-D-01"
     }
 }
 
@@ -42,10 +45,14 @@ category_data = {
 category = st.sidebar.selectbox("Select Tooling Category", list(category_data.keys()))
 prefix = category_data[category]["prefix"]
 app_title = category_data[category]["title"]
+example_code = category_data[category]["example"]
 
 # Dynamic Title based on selection
 st.title(f"🗜️ {app_title}")
 st.markdown("### Production Tooling & Fixture Master Control")
+
+# Show the team the expected format for safety
+st.info(f"**Format Guide:** The expected MasterCode input format for this category looks like: `{example_code}`")
 
 # --- 3. DATA PROCESSING ---
 uploaded_file = st.file_uploader(f"Upload CSV for {category}", type="csv")
