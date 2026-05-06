@@ -1,23 +1,24 @@
 import streamlit as st
 import pandas as pd
+import hashlib
 import io
 
-# --- 1. TOOLING ENGINE (THE BRAIN) ---
-def poly_hash_v8(string_in, modulo=10000):
-    """Generates a 4-digit unique numerical code (0000-9999)"""
-    h = 0
+# --- 1. TOOLING ENGINE (THE BRAIN) - UPGRADED TO SHA-256 ---
+def sha256_hash_v9(string_in, modulo=10000):
+    """Generates a 4-digit unique numerical code using SHA-256 for superior entropy"""
     # Removes dashes and spaces, making it uppercase for a perfect match
     clean_str = str(string_in).upper().replace("-", "").replace(" ", "")
-    for char in clean_str:
-        h = (h * 53 + ord(char))
-    h += len(clean_str)
-    return f"{h % modulo:04d}"
+    
+    # Process through Cryptographic SHA-256 hash
+    hash_hex = hashlib.sha256(clean_str.encode('utf-8')).hexdigest()
+    
+    # Convert hex to integer and constrain to 4 digits (0000-9999)
+    hash_int = int(hash_hex, 16)
+    return f"{hash_int % modulo:04d}"
 
 # --- 2. APP CONFIGURATION & CATEGORY DATA ---
 st.set_page_config(page_title="Molds & Fixtures Ecosystem", layout="wide")
 
-# Map the categories to their prefixes and specific Generator Names
-# Z0 added as the primary Master Assembly tier
 category_data = {
     "Molds-Cladding-Master-Assy": {
         "prefix": "Z0",
@@ -58,8 +59,8 @@ if uploaded_file is not None:
         st.info("Please ensure the first row of your column is exactly 'MasterCode'.")
     else:
         if st.button(f"🚀 Generate {prefix} Codes"):
-            # Create the ID: Prefix + "-" + 4-digit Hash
-            df['Generated P/N'] = df['MasterCode'].apply(lambda x: f"{prefix}-{poly_hash_v8(x)}")
+            # Create the ID using the upgraded V9 SHA-256 engine
+            df['Generated P/N'] = df['MasterCode'].apply(lambda x: f"{prefix}-{sha256_hash_v9(x)}")
             
             # Twin Check (Duplication monitor)
             duplicates = df.duplicated(subset=['Generated P/N']).sum()
@@ -68,6 +69,10 @@ if uploaded_file is not None:
             
             if duplicates > 0:
                 st.warning(f"⚠️ Warning: Found {duplicates} duplicate IDs in this list.")
+                # Show the user which ones duplicated so they know
+                duped_df = df[df.duplicated(subset=['Generated P/N'], keep=False)].sort_values('Generated P/N')
+                st.write("**Duplicated Entries:**")
+                st.dataframe(duped_df)
             else:
                 st.info("✨ Clean Batch: Zero duplicates detected.")
             
