@@ -24,9 +24,9 @@ st.set_page_config(page_title="Molds & Fixtures Ecosystem", layout="wide")
 # Each category now explicitly defines its required digit output length
 category_data = {
     "Mold Component P/N": {
-        "prefix": "X",
-        "title": "Mold Component P/N",
-        "example": "X-14-D-00-A1-01",
+        "prefix": "Dynamic", # Prefix is extracted dynamically in logic below
+        "title": "Mold Component P/N Generator",
+        "example": "X-N-04-00-A1-01",
         "digits": 5
     },
     "Molds-Cladding-Master-Assy": {
@@ -80,9 +80,21 @@ if uploaded_file is not None:
         st.error("❌ Error: Your CSV file is missing the 'MasterCode' column!")
         st.info("Please ensure the first row of your column is exactly 'MasterCode'.")
     else:
-        if st.button(f"🚀 Generate {prefix} Codes"):
-            # Create the ID passing the dynamic digit length
-            df['Generated P/N'] = df['MasterCode'].apply(lambda x: f"{prefix}-{sha256_hash_dynamic(x, digit_length)}")
+        # Dynamic button label based on category
+        btn_label = "🚀 Generate Mold Component Codes" if category == "Mold Component P/N" else f"🚀 Generate {prefix} Codes"
+        
+        if st.button(btn_label):
+            # Apply different prefix logic based on category selection
+            if category == "Mold Component P/N":
+                # Extracts the first 2 characters (ignoring dashes) for the prefix + 5 digit hash
+                df['Generated P/N'] = df['MasterCode'].apply(
+                    lambda x: f"{str(x).upper().replace('-', '').replace(' ', '')[:2]}-{sha256_hash_dynamic(x, digit_length)}"
+                )
+            else:
+                # Standard fixed prefix + 4 digit hash
+                df['Generated P/N'] = df['MasterCode'].apply(
+                    lambda x: f"{prefix}-{sha256_hash_dynamic(x, digit_length)}"
+                )
             
             # Twin Check (Duplication monitor)
             duplicates = df.duplicated(subset=['Generated P/N']).sum()
